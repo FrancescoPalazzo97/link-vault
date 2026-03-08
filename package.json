@@ -1,0 +1,26 @@
+{
+  "name": "link-vault",
+  "version": "1.0.0",
+  "workspaces": [
+    "client",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=server & npm run dev --workspace=client",
+    "build": "npm run build --workspace=shared && npm run build --workspace=server && npm run build --workspace=client",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "test": "npm run test --workspace=server",
+    "test:e2e": "npm run test:e2e --workspace=client",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.3.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": "biome check --write --no-errors-on-unmatched"
+  }
+}
