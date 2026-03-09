@@ -6,8 +6,8 @@ const envSchema = z.object({
 	MONGO_URI: z
 		.string()
 		.default("mongodb://admin:secret@localhost:27017/linkvault?authSource=admin"),
-	JWT_SECRET: z.string().min(1),
-	PASSWORD_HASH: z.string().min(1),
+	JWT_SECRET: z.string().trim().min(1),
+	PASSWORD_HASH: z.string().trim().min(1),
 });
 
 const result = envSchema.safeParse(process.env);
