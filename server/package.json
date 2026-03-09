@@ -13,20 +13,22 @@
   },
   "dependencies": {
     "@link-vault/shared": "*",
+    "bcrypt": "^6.0.0",
     "express": "^5.1.0",
     "mongoose": "^8.14.1",
-    "zod": "^3.25.0",
     "pino": "^9.6.0",
-    "pino-http": "^10.4.0"
+    "pino-http": "^10.4.0",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.1",
     "@types/node": "^22.14.0",
+    "@types/supertest": "^6.0.3",
     "pino-pretty": "^13.0.0",
+    "supertest": "^7.1.0",
     "tsx": "^4.19.3",
     "typescript": "^5.8.3",
-    "vitest": "^4.0.18",
-    "supertest": "^7.1.0",
-    "@types/supertest": "^6.0.3"
+    "vitest": "^4.0.18"
   }
 }
