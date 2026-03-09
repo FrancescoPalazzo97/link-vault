@@ -1,13 +1,17 @@
 import express from "express";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
+import { errorHandler } from "./middleware/errorHnadler.js";
 import healthRouter from "./routes/health.route.js";
 
 const app = express();
 const PORT = env.PORT;
 
 app.use(express.json());
+
 app.use("/api/health", healthRouter);
+
+app.use(errorHandler);
 
 async function start() {
 	await connectDB();
