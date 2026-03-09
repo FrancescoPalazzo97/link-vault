@@ -1,16 +1,6 @@
-import mongoose from "mongoose";
 import request from "supertest";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { env } from "../../src/config/env.js";
+import { describe, expect, it } from "vitest";
 import { app } from "../../src/index.js";
-
-beforeAll(async () => {
-	await mongoose.connect(env.MONGO_URI);
-});
-
-afterAll(async () => {
-	await mongoose.connection.close();
-});
 
 describe("GET /api/health", () => {
 	it("returns status ok and db connected", async () => {
