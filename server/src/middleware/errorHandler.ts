@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from "express";
+import { logger } from "../config/logger.js";
 import { AppError } from "../utils/AppError.js";
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
@@ -9,7 +10,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 		return;
 	}
 
-	console.log("Unknown error", err);
+	logger.error(err, "Unknown error");
 	res.status(500).json({
 		error: "Internal Server Error",
 	});
