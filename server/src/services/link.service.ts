@@ -1,6 +1,7 @@
 import type { CreateLinkInput, UpdateLinkInput } from "@link-vault/shared";
 import { Link } from "../models/link.model.js";
 import { AppError } from "../utils/AppError.js";
+import { extractDomain } from "../utils/extractDomain.js";
 
 export const linkService = {
 	async getAll(query: {
@@ -43,7 +44,10 @@ export const linkService = {
 	},
 
 	async create(data: CreateLinkInput) {
-		return Link.create(data);
+		return Link.create({
+			...data,
+			domain: data.domain ?? extractDomain(data.url),
+		});
 	},
 
 	async update(id: string, data: UpdateLinkInput) {
