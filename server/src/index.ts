@@ -5,6 +5,7 @@ import { env } from "./config/env.js";
 import { logger } from "./config/logger.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import healthRouter from "./routes/health.route.js";
+import linkRouter from "./routes/link.route.js";
 
 const app = express();
 const PORT = env.PORT;
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use(pinoHttp({ logger }));
 
 app.use("/api/health", healthRouter);
+app.use("/api/links", linkRouter);
 
 app.use(errorHandler);
 
