@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
-import { afterAll, beforeAll, beforeEach } from "vitest";
+import { afterAll, beforeAll, beforeEach, vi } from "vitest";
 import { env } from "../../src/config/env.js";
+
+vi.mock("open-graph-scraper");
 
 beforeAll(async () => {
 	await mongoose.connect(env.MONGO_URI);
