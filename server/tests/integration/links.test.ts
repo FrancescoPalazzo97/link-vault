@@ -80,6 +80,13 @@ describe("Links CRUD", () => {
 
 			expect(res.status).toBe(404);
 		});
+
+		it("returns 400 for malformed id", async () => {
+			const res = await request(app).get("/api/links/abc").set("Authorization", `Bearer ${token}`);
+
+			expect(res.status).toBe(400);
+			expect(res.body.error).toBe("Invalid ID format");
+		});
 	});
 
 	describe("PATCH /api/links/:id", () => {
@@ -96,6 +103,15 @@ describe("Links CRUD", () => {
 
 			expect(res.status).toBe(200);
 			expect(res.body.title).toBe("Updated Title");
+		});
+
+		it("returns 404 for non-existent link", async () => {
+			const res = await request(app)
+				.patch("/api/links/000000000000000000000000")
+				.set("Authorization", `Bearer ${token}`)
+				.send({ title: "Updated" });
+
+			expect(res.status).toBe(404);
 		});
 	});
 
@@ -117,6 +133,14 @@ describe("Links CRUD", () => {
 				.set("Authorization", `Bearer ${token}`);
 
 			expect(check.status).toBe(404);
+		});
+
+		it("returns 404 for non-existent link", async () => {
+			const res = await request(app)
+				.delete("/api/links/000000000000000000000000")
+				.set("Authorization", `Bearer ${token}`);
+
+			expect(res.status).toBe(404);
 		});
 	});
 });

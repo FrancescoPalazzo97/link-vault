@@ -68,4 +68,61 @@ describe("GET /api/links- search and filters", () => {
 		expect(res.body.totalPages).toBe(3);
 		expect(res.body.page).toBe(1);
 	});
+
+	it("filters by multiple tags", async () => {
+		const token = getAuthToken();
+
+		await request(app)
+			.post("/api/links")
+			.set("Authorization", `Bearer ${token}`)
+			.send({ url: "https://example.com", tags: ["react"] });
+
+		await request(app)
+			.post("/api/links")
+			.set("Authorization", `Bearer ${token}`)
+			.send({ url: "https://example.org", tags: ["typescript"] });
+
+		await request(app)
+			.post("/api/links")
+			.set("Authorization", `Bearer ${token}`)
+			.send({ url: "https://example.net", tags: ["vue"] });
+
+		const res = await request(app)
+			.get("/api/links?tags=react,typescript")
+			.set("Authorization", `Bearer ${token}`);
+
+		expect(res.status).toBe(200);
+		expect(res.body.links).toHaveLength(2);
+	});
+
+	it("returns correct links for page 2", async () => {
+		const token = getAuthToken();
+
+		for (let i = 0; i < 5; i++) {
+			await request(app)
+				.post("/api/links")
+				.set("Authorization", `Bearer ${token}`)
+				.send({ url: `https://page-test${i}.com` });
+		}
+
+		const res = await request(app)
+			.get("/api/links?page=2&limit=2")
+			.set("Authorization", `Bearer ${token}`);
+
+		expect(res.status).toBe(200);
+		expect(res.body.links).toHaveLength(2);
+		expect(res.body.page).toBe(2);
+	});
+
+	it("returns empty list for non-existent category", async () => {
+		const token = getAuthToken();
+
+		const res = await request(app)
+			.get("/api/links?category=nonexistent")
+			.set("Authorization", `Bearer ${token}`);
+
+		expect(res.status).toBe(200);
+		expect(res.body.links).toEqual([]);
+		expect(res.body.total).toBe(0);
+	});
 });
