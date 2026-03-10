@@ -1,4 +1,7 @@
+import cors from "cors";
 import express from "express";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 import { connectDB } from "./config/db.js";
 import { env } from "./config/env.js";
@@ -14,6 +17,25 @@ const PORT = env.PORT;
 
 app.use(express.json());
 app.use(pinoHttp({ logger }));
+app.use(helmet());
+app.use(cors({ origin: "http://localhost:5173" }));
+
+const globalLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 200,
+	standardHeaders: true,
+	legacyHeaders: false,
+});
+
+const loginLimiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 10,
+	standardHeaders: true,
+	legacyHeaders: false,
+});
+
+app.use("/api", globalLimiter);
+app.use("/api/auth/login", loginLimiter);
 
 app.use("/api/health", healthRouter);
 app.use("/api/auth", authRouter);
