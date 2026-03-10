@@ -2,6 +2,7 @@ import type { CreateLinkInput, UpdateLinkInput } from "@link-vault/shared";
 import { Link } from "../models/link.model.js";
 import { AppError } from "../utils/AppError.js";
 import { extractDomain } from "../utils/extractDomain.js";
+import { previewService } from "./preview.service.js";
 
 export const linkService = {
 	async getAll(query: {
@@ -44,7 +45,9 @@ export const linkService = {
 	},
 
 	async create(data: CreateLinkInput) {
+		const preview = await previewService.fetch(data.url);
 		return Link.create({
+			...preview,
 			...data,
 			domain: data.domain ?? extractDomain(data.url),
 		});
@@ -60,5 +63,14 @@ export const linkService = {
 		const link = await Link.findByIdAndDelete(id);
 		if (!link) throw new AppError(404, "Link not found");
 		return link;
+	},
+
+	async getTags() {
+		return Link.distinct("tags");
+	},
+
+	async getCategories() {
+		const cats = await Link.distinct("category");
+		return cats.filter(Boolean);
 	},
 };

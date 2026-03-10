@@ -14,15 +14,20 @@
   "dependencies": {
     "@link-vault/shared": "*",
     "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.3.1",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.14.1",
+    "open-graph-scraper": "^6.11.0",
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.14.0",
