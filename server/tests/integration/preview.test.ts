@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { app } from "../../src/index.js";
 import { getAuthToken } from "./helpers.js";
 
-describe("GET /api/linkd/preview", () => {
+describe("GET /api/links/preview", () => {
 	it("returns 401 without auth token", async () => {
 		const res = await request(app).post("/api/links/preview").send({ url: "https://example.com" });
 
