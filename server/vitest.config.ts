@@ -8,7 +8,7 @@ export default defineConfig({
         setupFiles: ["./tests/integration/setup.ts"],
         env: {
             JWT_SECRET: "test-secret",
-            PASSWORD_HASH: "$2b$10$dummyHashForTestingOnly1234567890123456789012",
+            PASSWORD_HASH: "$2b$10$CD8P.GS9zUSujDJzNrfYNeyiBuZo.GbfKTEvOxDTczn2ysxB0iuc.", // Password casuale per test
             MONGO_URI: "mongodb://admin:secret@localhost:27017/linkvault-test?authSource=admin",
         },
     },
