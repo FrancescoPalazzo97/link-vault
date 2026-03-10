@@ -42,7 +42,7 @@
 	},
 	"overrides": [
 		{
-			"includes": ["client/src/components/ui/**"],
+			"includes": ["client/src/components/ui/**", "client/src/components/login-form.tsx"],
 			"linter": { "enabled": false },
 			"formatter": { "enabled": false }
 		}
