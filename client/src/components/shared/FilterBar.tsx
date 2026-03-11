@@ -42,7 +42,7 @@ export function FilterBar({ selectedTag, selectedCategory, onTagChange, onCatego
 
 			<Select
 				value={selectedCategory || ALL}
-				onValueChange={(v) => onTagChange(v === ALL || !v ? "" : v)}
+				onValueChange={(v) => onCategoryChange(v === ALL || !v ? "" : v)}
 			>
 				<SelectTrigger className="w-44">
 					<SelectValue placeholder="All categories" />

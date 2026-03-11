@@ -31,6 +31,4 @@ const linkSchema = new Schema<ILink>(
 	}
 );
 
-linkSchema.index({ title: "text", url: "text", tags: "text", notes: "text" });
-
 export const Link = model<ILink>("Link", linkSchema);

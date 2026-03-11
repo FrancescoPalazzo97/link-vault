@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLinkSchema } from "@link-vault/shared";
 import { IconArrowLeft, IconPencil, IconTrash } from "@tabler/icons-react";
 import { useState } from "react";
-import { type Resolver, useForm } from "react-hook-form";
+import { type Resolver, useController, useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import type { z } from "zod";
 import { TagInput } from "@/components/shared/TagInput";
@@ -34,6 +34,7 @@ export function LinkDetailPage() {
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
 	const [editing, setEditing] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const { data: link, isLoading, isError } = useLink(id ?? "");
 	const { data: existingTags = [] } = useTags();
@@ -43,13 +44,15 @@ export function LinkDetailPage() {
 	const {
 		register,
 		handleSubmit,
-		watch,
-		setValue,
 		reset,
+		control,
 		formState: { errors },
 	} = useForm<LinkFormData>({
 		resolver: zodResolver(createLinkSchema) as Resolver<LinkFormData>,
 	});
+
+	const { field: tagsField } = useController({ name: "tags", control, defaultValue: [] });
+	const { field: favField } = useController({ name: "isFavorite", control, defaultValue: false });
 
 	const startEditing = () => {
 		if (!link) return;
@@ -68,13 +71,23 @@ export function LinkDetailPage() {
 	};
 
 	const onSubmit = async (data: LinkFormData) => {
-		await updateLink(data);
-		setEditing(false);
+		setError(null);
+		try {
+			await updateLink(data);
+			setEditing(false);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Failed to save changes");
+		}
 	};
 
 	const handleDelete = async () => {
-		await deleteLink(id ?? "");
-		navigate("/");
+		setError(null);
+		try {
+			await deleteLink(id ?? "");
+			navigate("/");
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Failed to delete link");
+		}
 	};
 
 	if (isLoading) return <Skeleton className="h-64 w-full rounded-lg" />;
@@ -115,6 +128,8 @@ export function LinkDetailPage() {
 					</AlertDialog>
 				</div>
 			</div>
+
+			{error && <p className="text-destructive text-sm">{error}</p>}
 
 			{/* View mode */}
 			{!editing && (
@@ -176,8 +191,8 @@ export function LinkDetailPage() {
 						<Field>
 							<FieldLabel>Tags</FieldLabel>
 							<TagInput
-								value={watch("tags") ?? []}
-								onChange={(tags) => setValue("tags", tags)}
+								value={tagsField.value ?? []}
+								onChange={tagsField.onChange}
 								suggestions={existingTags}
 							/>
 						</Field>
@@ -193,8 +208,8 @@ export function LinkDetailPage() {
 							<div className="flex items-center gap-3">
 								<Switch
 									id="isFavorite"
-									checked={watch("isFavorite") ?? false}
-									onCheckedChange={(v) => setValue("isFavorite", v)}
+									checked={favField.value ?? false}
+									onCheckedChange={favField.onChange}
 								/>
 								<FieldLabel htmlFor="isFavorite">Favorite</FieldLabel>
 							</div>
@@ -204,7 +219,7 @@ export function LinkDetailPage() {
 								<Button type="submit" disabled={isSaving}>
 									{isSaving ? "Saving..." : "Save"}
 								</Button>
-								<Button type="button" variant="outline" onClick={() => setEditing(false)}>
+								<Button type="button" variant="outline" onClick={() => { setError(null); setEditing(false); }}>
 									Cancel
 								</Button>
 							</div>

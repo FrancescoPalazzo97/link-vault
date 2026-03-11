@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLinkSchema } from "@link-vault/shared";
 import { IconLoader } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useController, useForm, type Resolver } from "react-hook-form";
 import type { z } from "zod";
 import { TagInput } from "@/components/shared/TagInput";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ export function AddLinkForm({ onSuccess }: Props) {
 	const { mutateAsync: createLink } = useCreateLink();
 	const { data: existingTags = [] } = useTags();
 	const [previewLoading, setPreviewLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const {
 		register,
@@ -32,11 +33,15 @@ export function AddLinkForm({ onSuccess }: Props) {
 		watch,
 		setValue,
 		getValues,
+		control,
 		formState: { errors, isSubmitting },
 	} = useForm<LinkFormData>({
 		resolver: zodResolver(createLinkSchema) as Resolver<LinkFormData>,
 		defaultValues: { url: "", tags: [], isFavorite: false },
 	});
+
+	const { field: tagsField } = useController({ name: "tags", control });
+	const { field: favField } = useController({ name: "isFavorite", control });
 
 	const url = watch("url");
 
@@ -70,8 +75,13 @@ export function AddLinkForm({ onSuccess }: Props) {
 	}, [url, setValue, getValues]);
 
 	const onSubmit = async (data: LinkFormData) => {
-		await createLink(data);
-		onSuccess();
+		setError(null);
+		try {
+			await createLink(data);
+			onSuccess();
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Failed to save link");
+		}
 	};
 
 	return (
@@ -101,8 +111,8 @@ export function AddLinkForm({ onSuccess }: Props) {
 				<Field>
 					<FieldLabel>Tags</FieldLabel>
 					<TagInput
-						value={watch("tags")}
-						onChange={(tags) => setValue("tags", tags)}
+						value={tagsField.value ?? []}
+						onChange={tagsField.onChange}
 						suggestions={existingTags}
 					/>
 				</Field>
@@ -121,14 +131,15 @@ export function AddLinkForm({ onSuccess }: Props) {
 					<div className="flex items-center gap-3">
 						<Switch
 							id="isFavorite"
-							checked={watch("isFavorite")}
-							onCheckedChange={(v) => setValue("isFavorite", v)}
+							checked={favField.value ?? false}
+							onCheckedChange={favField.onChange}
 						/>
 						<FieldLabel htmlFor="isFavorite">Favorite</FieldLabel>
 					</div>
 				</Field>
 
 				<Field>
+					{error && <p className="text-destructive text-xs mb-2">{error}</p>}
 					<Button type="submit" className="w-full" disabled={isSubmitting}>
 						{isSubmitting ? "Saving..." : "Save Link"}
 					</Button>

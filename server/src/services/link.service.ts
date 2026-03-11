@@ -1,6 +1,7 @@
 import type { CreateLinkInput, UpdateLinkInput } from "@link-vault/shared";
 import { Link } from "../models/link.model.js";
 import { AppError } from "../utils/AppError.js";
+import { escapeRegex } from "../utils/escapeRegex.js";
 import { extractDomain } from "../utils/extractDomain.js";
 import { previewService } from "./preview.service.js";
 
@@ -15,7 +16,9 @@ export const linkService = {
 		const filter: Record<string, unknown> = {};
 
 		if (query.search) {
-			filter.$text = { $search: query.search };
+			const escaped = escapeRegex(query.search);
+			const regex = new RegExp(`\\b${escaped}`, "i");
+			filter.$or = [{ title: regex }, { url: regex }, { tags: regex }, { notes: regex }];
 		}
 
 		if (query.tags) {

@@ -1,3 +1,4 @@
+import { queryClient } from "./queryClient";
 import { useAuthStore } from "../stores/authStore";
 
 const BASE_URL = "/api";
@@ -17,6 +18,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 	if (!res.ok) {
 		if (res.status === 401) {
 			logout();
+			queryClient.clear();
 			throw new Error("Unauthorized");
 		}
 		const body = await res.json().catch(() => ({}));
