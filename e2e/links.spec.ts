@@ -1,9 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 const PASSWORD = process.env.E2E_PASSWORD ?? "your-password-here";
+const TEST_DOMAIN = "linkvault-e2e-test.com";
+const TEST_URL = `https://${TEST_DOMAIN}`;
+const EDITED_TITLE = "E2E Edited Title";
+const EDITED_NOTES = "E2E test notes";
+const EDITED_TAG = "e2e-tag";
 
 let token: string;
-let createdLinkIds: string[] = [];
+let createdLinkId: string;
 
 test.beforeAll(async ({ request }) => {
     const res = await request.post("/api/auth/login", {
@@ -20,13 +25,12 @@ test.beforeEach(async ({ page }) => {
     await expect(page).toHaveURL("/");
 });
 
-test.afterEach(async ({ request }) => {
-    for (const id of createdLinkIds) {
-        await request.delete(`/api/links/${id}`, {
+test.afterAll(async ({ request }) => {
+    if (createdLinkId) {
+        await request.delete(`/api/links/${createdLinkId}`, {
             headers: { Authorization: `Bearer ${token}` },
         });
     }
-    createdLinkIds = [];
 });
 
 test("aggiunge un link e compare nella lista", async ({ page }) => {
@@ -34,36 +38,70 @@ test("aggiunge un link e compare nella lista", async ({ page }) => {
         (r) => r.url().includes("/api/links") && r.request().method() === "POST" && r.status() === 201
     );
     await page.getByRole("button", { name: "Add Link" }).click();
-    await page.getByLabel("URL").fill("https://example.com");
+    await page.getByLabel("URL").fill(TEST_URL);
     await page.getByRole("button", { name: "Save Link" }).click();
     const response = await responsePromise;
     const body = await response.json();
-    createdLinkIds.push(body._id);
-    await expect(page.getByText("example.com", { exact: true })).toBeVisible();
+    createdLinkId = body._id;
+    await expect(page.getByText(TEST_DOMAIN, { exact: true })).toBeVisible();
 });
 
-test("ricerca filtra i link", async ({ page, request }) => {
-    // Create a link via API for this test
-    const res = await request.post("/api/links", {
-        data: { url: "https://search-test-unique.com" },
-        headers: { Authorization: `Bearer ${token}` },
-    });
-    expect(res.ok()).toBeTruthy();
-    const link = await res.json();
-    createdLinkIds.push(link._id);
+test("ricerca filtra i link", async ({ page }) => {
+    await expect(page.getByText(TEST_DOMAIN, { exact: true })).toBeVisible({ timeout: 10_000 });
 
-    await page.reload();
-    // Wait for dashboard to fully load with link data
-    await expect(page.getByText("search-test-unique.com", { exact: true })).toBeVisible({ timeout: 10_000 });
-
-    // Now search and verify results are filtered
     const searchInput = page.getByPlaceholder("Search links...");
     const searchResponse = page.waitForResponse((r) =>
         r.url().includes("/api/links") && r.url().includes("search=") && r.request().method() === "GET"
     );
-    await searchInput.pressSequentially("search-test", { delay: 50 });
+    await searchInput.pressSequentially("linkvault-e2e", { delay: 50 });
     await searchResponse;
-    await expect(page.getByText("search-test-unique.com", { exact: true })).toBeVisible();
+    await expect(page.getByText(TEST_DOMAIN, { exact: true })).toBeVisible();
+});
+
+test("modifica un link dalla pagina dettaglio", async ({ page }) => {
+    await expect(page.getByText(TEST_DOMAIN, { exact: true })).toBeVisible({ timeout: 10_000 });
+    await page.getByText(TEST_DOMAIN, { exact: true }).click();
+    await expect(page).toHaveURL(/\/links\//);
+
+    await page.getByRole("button", { name: "Edit" }).click();
+
+    const titleInput = page.getByLabel("Title");
+    await titleInput.clear();
+    await titleInput.fill(EDITED_TITLE);
+
+    const notesInput = page.getByLabel("Notes");
+    await notesInput.clear();
+    await notesInput.fill(EDITED_NOTES);
+
+    const tagInput = page.getByPlaceholder("Add tag, press Enter");
+    await tagInput.fill(EDITED_TAG);
+    await tagInput.press("Enter");
+
+    const patchResponse = page.waitForResponse(
+        (r) => r.url().includes("/api/links/") && r.request().method() === "PATCH" && r.status() === 200
+    );
+    await page.getByRole("button", { name: "Save" }).click();
+    await patchResponse;
+
+    await expect(page.getByText(EDITED_TITLE)).toBeVisible();
+    await expect(page.getByText(EDITED_NOTES)).toBeVisible();
+    await expect(page.getByText(EDITED_TAG)).toBeVisible();
+});
+
+test("elimina un link dalla pagina dettaglio", async ({ page }) => {
+    await expect(page.getByText(EDITED_TITLE)).toBeVisible({ timeout: 10_000 });
+    await page.getByText(EDITED_TITLE).click();
+    await expect(page).toHaveURL(/\/links\//);
+
+    await page.getByRole("button", { name: "Delete" }).first().click();
+
+    const dialog = page.getByRole("alertdialog");
+    await expect(dialog).toBeVisible();
+    await dialog.getByRole("button", { name: "Delete" }).click();
+
+    await expect(page).toHaveURL("/");
+    await expect(page.getByText(EDITED_TITLE)).not.toBeVisible();
+    createdLinkId = "";
 });
 
 test("logout reindirizza al login", async ({ page }) => {
