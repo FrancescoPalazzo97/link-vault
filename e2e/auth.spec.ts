@@ -1,6 +1,5 @@
 import { expect, test } from "@playwright/test";
-
-const PASSWORD = process.env.E2E_PASSWORD ?? "your-password-here";
+import { PASSWORD } from "./helpers";
 
 test("login con password errata mostra errore", async ({ page }) => {
     await page.goto("/login");

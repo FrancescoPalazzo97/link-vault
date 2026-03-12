@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { deleteLinkViaAPI, getAuthToken, loginViaUI } from "./helpers";
 
-const PASSWORD = process.env.E2E_PASSWORD ?? "your-password-here";
 const TEST_DOMAIN = "linkvault-e2e-test.com";
 const TEST_URL = `https://${TEST_DOMAIN}`;
 const EDITED_TITLE = "E2E Edited Title";
@@ -11,25 +11,16 @@ let token: string;
 let createdLinkId: string;
 
 test.beforeAll(async ({ request }) => {
-    const res = await request.post("/api/auth/login", {
-        data: { password: PASSWORD },
-    });
-    const body = await res.json();
-    token = body.token;
+    token = await getAuthToken(request);
 });
 
 test.beforeEach(async ({ page }) => {
-    await page.goto("/login");
-    await page.getByLabel("Password").fill(PASSWORD);
-    await page.getByRole("button", { name: "Login" }).click();
-    await expect(page).toHaveURL("/");
+    await loginViaUI(page);
 });
 
 test.afterAll(async ({ request }) => {
     if (createdLinkId) {
-        await request.delete(`/api/links/${createdLinkId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-        });
+        await deleteLinkViaAPI(request, token, createdLinkId);
     }
 });
 
