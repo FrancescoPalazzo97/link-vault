@@ -16,7 +16,7 @@ const PORT = env.PORT;
 app.use(express.json());
 app.use(pinoHttp({ logger }));
 app.use(helmet());
-app.use(cors({ origin: "http://localhost:5173" }));
+app.use(cors({ origin: env.CORS_ORIGIN }));
 
 app.use("/api", globalLimiter, apiRouter);
 
