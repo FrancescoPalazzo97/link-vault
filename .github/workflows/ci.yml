@@ -29,6 +29,9 @@ jobs:
 
       - run: npm ci
 
+      - name: Build shared
+        run: npm run build --workspace=shared
+
       - name: Lint
         run: npm run lint
 
