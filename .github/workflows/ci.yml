@@ -40,3 +40,8 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Build Docker images
+        run: |
+          docker build -f Dockerfile.server -t linkvault-server .
+          docker build -f Dockerfile.client -t linkvault-client .
