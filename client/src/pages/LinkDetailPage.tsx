@@ -219,7 +219,14 @@ export function LinkDetailPage() {
 								<Button type="submit" disabled={isSaving}>
 									{isSaving ? "Saving..." : "Save"}
 								</Button>
-								<Button type="button" variant="outline" onClick={() => { setError(null); setEditing(false); }}>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={() => {
+										setError(null);
+										setEditing(false);
+									}}
+								>
 									Cancel
 								</Button>
 							</div>

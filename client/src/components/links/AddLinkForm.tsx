@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createLinkSchema } from "@link-vault/shared";
 import { IconLoader } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
-import { useController, useForm, type Resolver } from "react-hook-form";
+import { type Resolver, useController, useForm } from "react-hook-form";
 import type { z } from "zod";
 import { TagInput } from "@/components/shared/TagInput";
 import { Button } from "@/components/ui/button";

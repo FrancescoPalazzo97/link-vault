@@ -19,6 +19,6 @@ export const useAuthStore = create<AuthState>()(
 		{
 			name: "lv_token",
 			partialize: (state) => ({ token: state.token }),
-		},
-	),
+		}
+	)
 );

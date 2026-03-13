@@ -1,5 +1,5 @@
-import { queryClient } from "./queryClient";
 import { useAuthStore } from "../stores/authStore";
+import { queryClient } from "./queryClient";
 
 const BASE_URL = "/api";
 
