@@ -1,8 +1,6 @@
 services:
   client:
-    build:
-      context: .
-      dockerfile: Dockerfile.client
+    image: ghcr.io/francescopalazzo97/linkvault-client:latest
     ports:
       - "80:80"
     depends_on:
@@ -13,9 +11,7 @@ services:
       - app-network
 
   server:
-    build:
-      context: .
-      dockerfile: Dockerfile.server
+    image: ghcr.io/francescopalazzo97/linkvault-server:latest
     env_file: .env.docker
     depends_on:
       mongo:
