@@ -13,6 +13,7 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
 
 	if (err instanceof MongooseError.CastError) {
 		res.status(400).json({ error: "Invalid ID format" });
+		return;
 	}
 
 	logger.error(err, "Unknown error");
