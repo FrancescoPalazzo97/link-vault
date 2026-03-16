@@ -7,6 +7,7 @@ export function useLinks(query: LinksQuery = {}) {
 	if (query.search) params.set("search", query.search);
 	if (query.tags) params.set("tags", query.tags);
 	if (query.category) params.set("category", query.category);
+	if (query.isFavorite) params.set("isFavorite", "true");
 	if (query.page) params.set("page", String(query.page));
 	if (query.limit) params.set("limit", String(query.limit));
 

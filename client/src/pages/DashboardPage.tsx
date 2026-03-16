@@ -1,42 +1,50 @@
 import { IconPlus } from "@tabler/icons-react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AddLinkForm } from "@/components/links/AddLinkForm";
 import { LinkCard } from "@/components/links/LinkCard";
-import { FilterBar } from "@/components/shared/FilterBar";
+import { Modal } from "@/components/shared/Modal";
 import { Pagination } from "@/components/shared/Pagination";
 import { SearchBar } from "@/components/shared/SearchBar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useLinks } from "@/hooks/useLinks";
+import { useTags } from "@/hooks/useTags";
+import { useFiltersStore } from "@/stores/filtersStore";
 import { useUiStore } from "@/stores/uiStore";
 
 const LIMIT = 12;
 
 export function DashboardPage() {
-	const isAddLinkOpen = useUiStore((s) => s.isAddLinkOpen);
-	const closeAddLink = useUiStore((s) => s.closeAddLink);
-	const navigate = useNavigate();
 	const openAddLink = useUiStore((s) => s.openAddLink);
+	const navigate = useNavigate();
 
-	const [search, setSearch] = useState("");
-	const [selectedTag, setSelectedTag] = useState("");
-	const [selectedCategory, setSelectedCategory] = useState("");
-	const [page, setPage] = useState(1);
+	const search = useFiltersStore((s) => s.search);
+	const setSearch = useFiltersStore((s) => s.setSearch);
+	const selectedTag = useFiltersStore((s) => s.selectedTag);
+	const setSelectedTag = useFiltersStore((s) => s.setSelectedTag);
+	const selectedCategory = useFiltersStore((s) => s.selectedCategory);
+	const isFavorite = useFiltersStore((s) => s.isFavorite);
+	const page = useFiltersStore((s) => s.page);
+	const setPage = useFiltersStore((s) => s.setPage);
 
 	const debouncedSearch = useDebounce(search);
+	const { data: tags = [] } = useTags();
 
 	const { data, isLoading, isError } = useLinks({
 		search: debouncedSearch || undefined,
 		tags: selectedTag || undefined,
 		category: selectedCategory || undefined,
+		isFavorite: isFavorite || undefined,
 		page,
 		limit: LIMIT,
 	});
-
-	const resetPage = () => setPage(1);
 
 	return (
 		<div className="space-y-4">
@@ -49,29 +57,27 @@ export function DashboardPage() {
 				</Button>
 			</div>
 
-			{/* Search + Filters */}
+			{/* Search + Tag filter */}
 			<div className="flex flex-col gap-2 sm:flex-row">
 				<div className="flex-1">
-					<SearchBar
-						value={search}
-						onChange={(v) => {
-							setSearch(v);
-							resetPage();
-						}}
-					/>
+					<SearchBar value={search} onChange={setSearch} />
 				</div>
-				<FilterBar
-					selectedTag={selectedTag}
-					selectedCategory={selectedCategory}
-					onTagChange={(v) => {
-						setSelectedTag(v);
-						resetPage();
-					}}
-					onCategoryChange={(v) => {
-						setSelectedCategory(v);
-						resetPage();
-					}}
-				/>
+				<Select
+					value={selectedTag || "__all__"}
+					onValueChange={(v) => v && setSelectedTag(v === "__all__" ? "" : v)}
+				>
+					<SelectTrigger className="w-full sm:w-40">
+						<SelectValue placeholder="All tags" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="__all__">All tags</SelectItem>
+						{tags.map((tag) => (
+							<SelectItem key={tag} value={tag}>
+								{tag}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
 			</div>
 
 			{/* Content */}
@@ -100,14 +106,7 @@ export function DashboardPage() {
 				</>
 			)}
 
-			<Dialog open={isAddLinkOpen} onOpenChange={(open) => !open && closeAddLink()}>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Add Link</DialogTitle>
-					</DialogHeader>
-					<AddLinkForm onSuccess={closeAddLink} />
-				</DialogContent>
-			</Dialog>
+			<Modal />
 		</div>
 	);
 }

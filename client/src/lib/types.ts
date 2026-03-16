@@ -17,6 +17,7 @@ export interface LinksQuery {
 	search?: string;
 	tags?: string;
 	category?: string;
+	isFavorite?: boolean;
 	page?: number;
 	limit?: number;
 }
