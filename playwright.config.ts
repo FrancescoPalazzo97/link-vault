@@ -17,4 +17,8 @@ export default defineConfig({
         reuseExistingServer: true,
         timeout: 30000,
     },
+    reporter: [
+        ["html", { open: "never"}],
+        ["list"]
+    ]
 });

@@ -17,7 +17,7 @@ dist/
 Thumbs.db
 
 # Coverage reports
-serever/coverage/
+server/coverage/
 
 # Playwright
 playwright-report/
