@@ -10,6 +10,7 @@ export const linkService = {
 		search?: string;
 		tags?: string;
 		category?: string;
+		isFavorite?: string;
 		page?: string;
 		limit?: string;
 	}) {
@@ -27,6 +28,10 @@ export const linkService = {
 
 		if (query.category) {
 			filter.category = query.category;
+		}
+
+		if (query.isFavorite === "true") {
+			filter.isFavorite = true;
 		}
 
 		const page = parseInt(query.page ?? "1", 10);
