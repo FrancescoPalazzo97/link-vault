@@ -17,9 +17,14 @@ const PORT = env.PORT;
 
 app.use(express.json());
 app.use(pinoHttp({ logger }));
+app.use(
+	"/api/docs",
+	helmet({ contentSecurityPolicy: false }),
+	swaggerUi.serve,
+	swaggerUi.setup(openApiDocument)
+);
 app.use(helmet());
 app.use(cors({ origin: env.CORS_ORIGIN }));
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use("/api", globalLimiter, apiRouter);
 
