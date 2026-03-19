@@ -123,7 +123,7 @@ npm run test:e2e:report
 
 ## API Documentation
 
-Interactive Swagger UI available at `/api/docs` ([live](https://fitnesspro.it/api/docs)).
+Interactive Swagger UI available at `/api/docs` ([live](https://www.fitnesspro.it/api/docs)).
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
