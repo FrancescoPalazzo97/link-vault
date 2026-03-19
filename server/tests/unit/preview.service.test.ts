@@ -63,6 +63,7 @@ describe("previewService.fetch", () => {
 			"https://youtu.be/dQw4w9WgXcQ",
 			"https://m.youtube.com/watch?v=dQw4w9WgXcQ",
 			"https://youtube.com/watch?v=dQw4w9WgXcQ",
+			"https://music.youtube.com/watch?v=dQw4w9WgXcQ",
 		];
 
 		afterEach(() => {
@@ -84,31 +85,103 @@ describe("previewService.fetch", () => {
 
 			expect(data).toEqual({
 				title: "Rick Astley - Never Gonna Give You Up",
+				description: "Video by Rick Astley",
 				image: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
 			});
 			expect(mockOgs).not.toHaveBeenCalled();
 			expect(mockFetch).toHaveBeenCalledWith(
 				expect.stringContaining("youtube.com/oembed"),
-				expect.any(Object),
+				expect.any(Object)
 			);
 		});
 
-		it("returns empty object when oEmbed returns non-ok response", async () => {
-			vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce({ ok: false }));
+		it("omits description when author_name is absent", async () => {
+			vi.stubGlobal(
+				"fetch",
+				vi.fn().mockResolvedValueOnce({
+					ok: true,
+					json: async () => ({
+						title: "Some Video",
+						thumbnail_url: "https://i.ytimg.com/vi/abc/hqdefault.jpg",
+					}),
+				})
+			);
 
-			const data = await previewService.fetch("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+			const data = await previewService.fetch("https://www.youtube.com/watch?v=abc");
 
-			expect(data).toEqual({});
-			expect(mockOgs).not.toHaveBeenCalled();
+			expect(data.description).toBeUndefined();
 		});
 
-		it("returns empty object when oEmbed fetch throws", async () => {
+		it("normalizes embed URLs before calling oEmbed", async () => {
+			const mockFetch = vi.fn().mockResolvedValueOnce({
+				ok: true,
+				json: async () => ({
+					title: "Embed Video",
+					thumbnail_url: "https://i.ytimg.com/vi/abc123/hqdefault.jpg",
+					author_name: "Author",
+				}),
+			});
+			vi.stubGlobal("fetch", mockFetch);
+
+			await previewService.fetch("https://www.youtube.com/embed/abc123");
+
+			expect(mockFetch).toHaveBeenCalledWith(
+				expect.stringContaining(encodeURIComponent("https://www.youtube.com/watch?v=abc123")),
+				expect.any(Object)
+			);
+		});
+
+		it("falls back to OGS when oEmbed returns non-ok response", async () => {
+			vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce({ ok: false }));
+			mockOgs.mockResolvedValueOnce({
+				result: {
+					ogTitle: "Fallback Title",
+					ogDescription: "Fallback Desc",
+					ogImage: [{ url: "https://example.com/fallback.jpg" }],
+				},
+				html: "",
+				response: {} as never,
+				error: false,
+			});
+
+			const data = await previewService.fetch("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+
+			expect(data).toEqual({
+				title: "Fallback Title",
+				description: "Fallback Desc",
+				image: "https://example.com/fallback.jpg",
+			});
+			expect(mockOgs).toHaveBeenCalled();
+		});
+
+		it("falls back to OGS when oEmbed fetch throws", async () => {
 			vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new Error("Network error")));
+			mockOgs.mockResolvedValueOnce({
+				result: {
+					ogTitle: "OGS Fallback",
+					ogDescription: undefined,
+					ogImage: undefined,
+				},
+				html: "",
+				response: {} as never,
+				error: false,
+			});
+
+			const data = await previewService.fetch("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+
+			expect(data).toEqual({
+				title: "OGS Fallback",
+			});
+			expect(mockOgs).toHaveBeenCalled();
+		});
+
+		it("returns empty object when both oEmbed and OGS fail", async () => {
+			vi.stubGlobal("fetch", vi.fn().mockRejectedValueOnce(new Error("oEmbed down")));
+			mockOgs.mockRejectedValueOnce(new Error("OGS also down"));
 
 			const data = await previewService.fetch("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
 
 			expect(data).toEqual({});
-			expect(mockOgs).not.toHaveBeenCalled();
 		});
 	});
 });
